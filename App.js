@@ -10,31 +10,73 @@ import {
 import {
   createStackNavigator
 } from '@react-navigation/stack';
+import { TextInput } from 'react-native-gesture-handler';
 
 // make home screen page
 // add navigation param to each function for navigating between screen
-function HomeScreen({ navigation }){
+function HomeScreen({ route, navigation }){
+  React.useEffect(() => {
+    if(route.params?.post){
+      // Post updated, do something with `route.params.post`
+      // For example, send the post to the server
+    }
+  }, [route.params?.post]);
+  
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
       <Text>Home Screen</Text>
       <Button 
-        title="Go to Details"
-        onPress={() => navigation.navigate('Details')}
+        title="Create Post"
+        onPress={() => {
+          // 1. Navigate to the details route with params
+          navigation.navigate('CreatePost');
+        }}
       />
+      <Text style={{ margin:10 }}>Post: {route.params?.post}</Text>
     </View>
+  );
+}
+
+function CreatePostScreen({ navigation, route }){
+  const [postText, setPostText ] = React.useState('');
+
+  return(
+    <>
+      <TextInput 
+        multiline
+        placeholder="What's on your mind?"
+        style={{ height:200, padding:10, backgroundColor: 'white' }}
+        value={postText}
+        onChangeText={setPostText}
+      />
+      <Button 
+        title="Done"
+        onPress={() => {
+          // Pass params back to home screen
+          navigation.navigate('Home', { post: postText });
+        }}
+      />
+    </>
   );
 }
 
 // make details screen page
 // add navigation param to each function for navigating between screen
-function DetailsScreen({ navigation }){
+function DetailsScreen({ route, navigation }){
+  // 2. Get the param
+  const { ItemId } = route.params;
+  const { otherParams } = route.params;
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
       <Text>Details Screen</Text>
+      <Text>ItemId: {JSON.stringify(ItemId)}</Text>
+      <Text>otherParam: {JSON.stringify(otherParams)}</Text>
       {/* push will make a new screen altough we're currently on that screen */}
       <Button 
         title="Go to Details...again"
-        onPress={() => navigation.push('Details')}
+        onPress={() => navigation.push('Details', {
+          ItemId: Math.floor(Math.random() * 100),
+        })}
       />
       {/* normally we use navigate to navigating to existing screen */}
       <Button 
@@ -75,6 +117,12 @@ function App(){
           name="Details" 
           component={DetailsScreen} 
           options={{ title: 'Details'}}  
+          initialParams={{ itemId: 43 }}
+        />
+        <Stack.Screen 
+          name="CreatePost"
+          component={CreatePostScreen}
+          options={{ title: 'Create Post' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
@@ -82,10 +130,9 @@ function App(){
 }
 
 // CONCLUSSIONS
-// - navigation.navigate('RouteName') pushes a new route to the stack navigator if it's not already in the stack, otherwise it jumps to that screen.
-// - We can call navigation.push('RouteName') as many times as we like and it will continue pushing routes.
-// - The header bar will automatically show a back button, but you can programmatically go back by calling navigation.goBack(). On Android, the hardware back button just works as expected.
-// - You can go back to an existing screen in the stack with navigation.navigate('RouteName'), and you can go back to the first screen in the stack with navigation.popToTop().
-// - The navigation prop is available to all screen components (components defined as screens in route configuration and rendered by React Navigation as a route).
+// - navigate and push accept an optional second argument to let you pass parameters to the route you are navigating to. For example: navigation.navigate('RouteName', {paramName: 'value'}).
+// - You can read the params through route.params inside a screen
+// - You can update the screen's params with navigation.setParams
+// - Initial params can be passed via the initialParams prop on Screen
 
 export default App;
