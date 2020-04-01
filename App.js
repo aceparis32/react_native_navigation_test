@@ -2,7 +2,8 @@ import * as React from 'react';
 import {
   View,
   Text,
-  Button
+  Button,
+  Image
 } from 'react-native';
 import {
   NavigationContainer
@@ -31,6 +32,20 @@ function HomeScreen({ route, navigation }){
           // 1. Navigate to the details route with params
           navigation.navigate('CreatePost');
         }}
+      />
+      <Button
+        title="To Profile"
+        onPress={() =>
+          navigation.navigate('Profile', {
+            name: 'Custom Profile Header'
+          })
+        }
+      />
+      <Button
+        title="Update the title"
+        onPress={() =>
+          navigation.setOptions({ title: 'Updated!' })
+        }
       />
       <Text style={{ margin:10 }}>Post: {route.params?.post}</Text>
     </View>
@@ -97,6 +112,32 @@ function DetailsScreen({ route, navigation }){
   );
 }
 
+function ProfileScreen({ navigation }){
+  return(
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>Profile screen</Text>
+      <Button
+        title="Go Back"
+        onPress={() =>
+          navigation.goBack()
+        }
+      />
+    </View>
+  );
+}
+
+function LogoTitle() {
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Image 
+        style={{ width: 50, height: 50 }}
+        source={require('./images/barnacle.png')}
+        />
+      <Text>Home screen</Text>
+    </View>
+  );
+}
+
 // initiate stack navigator
 const Stack = createStackNavigator();
 
@@ -104,14 +145,27 @@ function App(){
   return(
     <NavigationContainer>
       {/* use initialRouteName as the first page you want to render */}
-      <Stack.Navigator initialRouteName="Home">
+      <Stack.Navigator 
+        initialRouteName="Home"
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#f4511e',
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}  
+      >
         {/* Screen need name prop to which refers to the name of the route
         and component prop which specifies the component to render for the route
         these are the 2 required props. */}
         <Stack.Screen 
           name="Home" 
           component={HomeScreen} 
-          options={{ title: 'Overview'}}
+          options={{ 
+            headerTitle: props => <LogoTitle {...props} />
+          }}
         />
         <Stack.Screen 
           name="Details" 
@@ -124,15 +178,19 @@ function App(){
           component={CreatePostScreen}
           options={{ title: 'Create Post' }}
         />
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={({route}) => ({ title: route.params.name })}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
 // CONCLUSSIONS
-// - navigate and push accept an optional second argument to let you pass parameters to the route you are navigating to. For example: navigation.navigate('RouteName', {paramName: 'value'}).
-// - You can read the params through route.params inside a screen
-// - You can update the screen's params with navigation.setParams
-// - Initial params can be passed via the initialParams prop on Screen
+// You can customize the header inside of the options prop of your screen components. Read the full list of options in the API reference (https://reactnavigation.org/docs/stack-navigator#navigationoptions-used-by-stacknavigator).
+// The options prop can be an object or a function. When it is a function, it is provided with an object with the navigation and route prop.
+// You can also specify shared screenOptions in the stack navigator configuration when you initialize it. The prop takes precedence over that configuration.
 
 export default App;
